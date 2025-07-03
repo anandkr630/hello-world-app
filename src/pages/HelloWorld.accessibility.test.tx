@@ -1,0 +1,11 @@
+import { render } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import HelloWorld from './HelloWorld';
+
+expect.extend(toHaveNoViolations);
+
+test('has no accessibility violations', async () => {
+  const { container } = render(<HelloWorld />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
