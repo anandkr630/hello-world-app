@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 type UserContextType = {
   name: string;
@@ -6,21 +6,28 @@ type UserContextType = {
   isEmailVerified: boolean;
 };
 
-const dummyUser = {
-  name: "Anand",
-  isRegistered: true,
-  isEmailVerified: true,
+type UserContextValue = {
+  user: UserContextType;
+  setUser: React.Dispatch<React.SetStateAction<UserContextType>>;
 };
 
-export const UserContext = createContext<UserContextType | undefined>(
-  undefined
-);
+const defaultUser: UserContextType = {
+  name: "",
+  isRegistered: false,
+  isEmailVerified: false,
+};
+
+const UserContext = createContext<UserContextValue | null>(null);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const [user, setUser] = useState<UserContextType>(defaultUser);
+
   return (
-    <UserContext.Provider value={dummyUser}>{children}</UserContext.Provider>
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
   );
 };
 
