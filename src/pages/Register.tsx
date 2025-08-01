@@ -1,8 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import CryptoJS from "crypto-js";
 
 const Register: React.FC = () => {
   const { setUser } = useUser();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -12,7 +15,6 @@ const Register: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [registered, setRegistered] = useState(false);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -50,25 +52,28 @@ const Register: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      setUser({
-        name: formData.name,
-        isRegistered: true,
-        isEmailVerified: false, // default until verification
-      }); // Save in context
-      setRegistered(true);
-    }
-  };
+    if (!validate()) return;
 
-  if (registered) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-green-600 text-xl">
-          ✅ Registered! Check your email to verify.
-        </p>
-      </div>
-    );
-  }
+    // Encrypt the password
+    const encryptedPassword = CryptoJS.AES.encrypt(
+      formData.password,
+      "secret-key"
+    ).toString();
+
+    // Save in context
+    setUser((prev) => ({
+      ...prev,
+      name: formData.name,
+      email: formData.email,
+      password: encryptedPassword,
+      role: formData.role as "Guru" | "Shishya",
+      isRegistered: true,
+      isEmailVerified: false,
+    }));
+
+    // Navigate to verify email
+    navigate("/verify-email");
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
