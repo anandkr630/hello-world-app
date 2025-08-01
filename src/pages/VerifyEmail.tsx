@@ -1,26 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 
+const VERIFY_CODE = "140913";
+
 const VerifyEmail: React.FC = () => {
-  const { name, setUser } = useUser();
+  const { user, setUser } = useUser();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Prevent access if not registered
+  useEffect(() => {
+    if (!user.isRegistered) {
+      navigate("/register");
+    }
+  }, [user.isRegistered, navigate]);
+
   const handleVerify = () => {
-    // Validate input: Must be 6-digit number
     if (!/^\d{6}$/.test(code)) {
       setError("Please enter a valid 6-digit code.");
       return;
     }
 
-    // Dummy check: Assume 123456 is correct
-    if (code === "123456") {
-      // Update context: set email verified
-      setUser((prevUser) => ({ ...prevUser, isEmailVerified: true }));
-
-      // Redirect to login
+    if (code === VERIFY_CODE) {
+      setUser((prev) => ({ ...prev, isEmailVerified: true }));
       navigate("/login");
     } else {
       setError("Invalid verification code. Please try again.");
@@ -32,7 +36,8 @@ const VerifyEmail: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-md p-6 max-w-md w-full text-center">
         <h1 className="text-2xl font-bold mb-2">Verify Email</h1>
         <p className="mb-4 text-sm text-gray-600">
-          Welcome, {name}! Enter the 6-digit code sent to your email.
+          Welcome, {user.name}! Enter the 6-digit code sent to{" "}
+          <strong>{user.email}</strong>.
         </p>
 
         <input

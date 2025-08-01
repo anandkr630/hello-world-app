@@ -1,29 +1,53 @@
+// context/UserContext.tsx
 import React, { createContext, useContext, useState } from "react";
 
-type UserContextType = {
+interface User {
   name: string;
+  email: string;
+  password: string;
   isRegistered: boolean;
   isEmailVerified: boolean;
-};
+  isLoggedIn: boolean;
+  bio?: string;
+  skills?: string[];
+  links?: {
+    linkedin?: string;
+    github?: string;
+  };
+  mentorship?: {
+    gurus?: string[];
+    shishyas?: string[];
+  };
+  payments?: {
+    paid?: string;
+    received?: string;
+    lastPaymentDate?: string;
+  };
+}
 
-type UserContextValue = {
-  user: UserContextType;
-  setUser: React.Dispatch<React.SetStateAction<UserContextType>>;
-};
+interface UserContextType {
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+}
 
-const defaultUser: UserContextType = {
+const defaultUser: User = {
   name: "",
+  email: "",
+  password: "",
   isRegistered: false,
   isEmailVerified: false,
+  isLoggedIn: false,
 };
 
-const UserContext = createContext<UserContextValue | null>(null);
+const UserContext = createContext<UserContextType>({
+  user: defaultUser,
+  setUser: () => {},
+});
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserContextType>(defaultUser);
-
+  const [user, setUser] = useState<User>(defaultUser);
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}
@@ -31,8 +55,4 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) throw new Error("useUser must be used within a UserProvider");
-  return context;
-};
+export const useUser = () => useContext(UserContext);

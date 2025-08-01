@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import CryptoJS from "crypto-js";
 
 const Login: React.FC = () => {
+  const { user, setUser } = useUser();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -13,7 +16,6 @@ const Login: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const { email, password } = formData;
 
     if (!email || !password) {
@@ -21,9 +23,29 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Dummy login validation
-    if (email === "test@example.com" && password === "password123") {
-      navigate("/profile-view");
+    if (!user.isRegistered) {
+      setError("User not registered. Please register first.");
+      return;
+    }
+
+    if (!user.isEmailVerified) {
+      setError("Email not verified. Please verify your email first.");
+      return;
+    }
+
+    // Decrypt stored password
+    let decryptedPassword = "";
+    try {
+      const bytes = CryptoJS.AES.decrypt(user.password, "secret-key");
+      decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
+    } catch (err) {
+      setError("Failed to decrypt password.");
+      return;
+    }
+
+    if (email === user.email && password === decryptedPassword) {
+      setUser((prev) => ({ ...prev, isLoggedIn: true }));
+      navigate("/profile");
     } else {
       setError("Invalid email or password.");
     }
